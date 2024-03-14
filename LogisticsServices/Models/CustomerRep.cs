@@ -25,6 +25,8 @@ public partial class CustomerRep
 
     public int ZipId { get; set; }
 
+    public byte[] PasswordHash { get; set; }
+
     public virtual Customer Customer { get; set; }
 
     public virtual Zip Zip { get; set; }
