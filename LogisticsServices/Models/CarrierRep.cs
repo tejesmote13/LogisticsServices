@@ -15,8 +15,6 @@ public partial class CarrierRep
 
     public string LastName { get; set; }
 
-    public string Password { get; set; }
-
     public string EmailId { get; set; }
 
     public string Phone { get; set; }
@@ -24,6 +22,8 @@ public partial class CarrierRep
     public string Address { get; set; }
 
     public int ZipId { get; set; }
+
+    public string Password { get; set; }
 
     public virtual Carrier Carrier { get; set; }
 

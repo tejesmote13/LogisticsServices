@@ -9,13 +9,11 @@ public partial class PendingOrder
 
     public int CustomerId { get; set; }
 
-    public int CarrierId { get; set; }
+    public int? CarrierId { get; set; }
 
-    public DateTime OrderDate { get; set; }
+    public DateTime? OrderDate { get; set; }
 
-    public DateTime PickUpDate { get; set; }
-
-    public string Status { get; set; }
+    public DateTime? PickUpDate { get; set; }
 
     public int OriginZipId { get; set; }
 
@@ -23,11 +21,9 @@ public partial class PendingOrder
 
     public int EquipmentId { get; set; }
 
-    public int CarrierPrice { get; set; }
+    public double? CarrierPrice { get; set; }
 
-    public int CustomerPrice { get; set; }
-
-    public bool? IsOrderCreated { get; set; }
+    public double? CustomerPrice { get; set; }
 
     public virtual Carrier Carrier { get; set; }
 

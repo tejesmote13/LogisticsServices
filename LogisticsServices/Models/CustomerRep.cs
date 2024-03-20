@@ -15,8 +15,6 @@ public partial class CustomerRep
 
     public string LastName { get; set; }
 
-    public string Password { get; set; }
-
     public string EmailId { get; set; }
 
     public string Phone { get; set; }
@@ -25,7 +23,7 @@ public partial class CustomerRep
 
     public int ZipId { get; set; }
 
-    public byte[] PasswordHash { get; set; }
+    public string Password { get; set; }
 
     public virtual Customer Customer { get; set; }
 

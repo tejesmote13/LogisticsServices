@@ -13,8 +13,6 @@ public partial class Customer
 
     public string LastName { get; set; }
 
-    public string Password { get; set; }
-
     public string EmailId { get; set; }
 
     public string Phone { get; set; }
@@ -22,6 +20,8 @@ public partial class Customer
     public string Address { get; set; }
 
     public int ZipId { get; set; }
+
+    public string Password { get; set; }
 
     public virtual ICollection<CustomerRep> CustomerReps { get; set; } = new List<CustomerRep>();
 

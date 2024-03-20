@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LogisticsServices.Repositories.User
+namespace LogisticsServices.Models
 {
     public class loginDTO
     {

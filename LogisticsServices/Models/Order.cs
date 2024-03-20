@@ -11,9 +11,9 @@ public partial class Order
 
     public int CarrierId { get; set; }
 
-    public DateTime OrderDate { get; set; }
+    public DateTime? OrderDate { get; set; }
 
-    public DateTime PickUpDate { get; set; }
+    public DateTime? PickUpDate { get; set; }
 
     public string Status { get; set; }
 
@@ -23,9 +23,9 @@ public partial class Order
 
     public int EquipmentId { get; set; }
 
-    public int CarrierPrice { get; set; }
+    public double? CarrierPrice { get; set; }
 
-    public int CustomerPrice { get; set; }
+    public double? CustomerPrice { get; set; }
 
     public virtual Carrier Carrier { get; set; }
 

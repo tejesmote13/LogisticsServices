@@ -19,84 +19,84 @@ namespace LogisticsServices.Controllers
 
         [HttpPost]
         [Route("addCustomerDetails")]
-        public bool AddCustomerDetails( Customer customer)
+        public async Task<IActionResult> AddCustomerDetails( Customer customer)
         {
-            bool status=false;
             try
             {
-                status = _userRepository.AddCustomerDetails(customer);
+               var status = await _userRepository.AddCustomerDetails(customer);
+                    return Ok(new { Status = status.success, Message = status.message });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                status = false;
+                return BadRequest(new {Error = ex.Message });
             }
-            return status;
         }
 
         [HttpPost]
         [Route("addCarrierRegistrationDetails")]
-        public bool AddCarrierRegistrationDetails(Carrier carrier)
+        public async Task<IActionResult> AddCarrierRegistrationDetails(Carrier carrier)
         {
-            bool status;
             try
             {
-                status = _userRepository.AddCarrierRegistrationDetails(carrier);
+                var status = await _userRepository.AddCarrierRegistrationDetails(carrier);
+                return Ok(new { Status = status.success, Message = status.message });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                status = false;
+                return BadRequest(new { Error = ex.Message });
             }
-            return status;
         }
 
         [HttpPost]
         [Route("addCarrierRepRegistrationDetails")]
-        public bool AddCarrierRepRegistrationDetails(CarrierRep carrierRep)
+        public async Task<IActionResult> AddCarrierRepRegistrationDetails(RegistrationDTO carrierRep)
         {
-            bool status;
             try
             {
-                status = _userRepository.AddCarrierRepRegistrationDetails(carrierRep);
+                var status = await _userRepository.AddCarrierRepRegistrationDetails(carrierRep);
+                return Ok(new { Status = status.success, Message = status.message });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                status = false;
+                return BadRequest(new { Error = ex.Message });
             }
-            return status;
         }
 
         [HttpPost]
         [Route("addCustomerRepRegistrationDetails")]
-        public bool AddCustomerRepRegistrationDetails(CustomerRep customerRep)
+        public async Task<IActionResult> AddCustomerRepRegistrationDetails(RegistrationDTO customerRep)
         {
-            bool status;
             try
             {
-                status = _userRepository.AddCustomerRepRegistrationDetails(customerRep);
+              var  status = await _userRepository.AddCustomerRepRegistrationDetails(customerRep);
+                return Ok(new { Status = status.success, Message = status.message });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                status = false;
+                return BadRequest(new { Error = ex.Message });
             }
-            return status;
         }
 
         [HttpPost]
         [Route("checkLoginDetails")]
-        public bool CheckLoginDetails(loginDTO loginDetails)
+        public async Task<IActionResult> CheckLoginDetails(loginDTO loginDetails)
         {
-            bool status;
             try
             {
-                status = _userRepository.CheckLoginDetails(loginDetails);
+               var status = await _userRepository.CheckLoginDetails(loginDetails);
+                if (status.success)
+                {
+                    return Ok(new {token=status.message});
+                }
+                else
+                {
+                    return BadRequest(new { Error = status.message });
+                }  
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                status = false;
+                return BadRequest(new { Error = ex.Message });
             }
-            return status;
         }
-
-
     }
 }

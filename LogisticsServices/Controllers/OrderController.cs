@@ -34,19 +34,111 @@ namespace LogisticsServices.Controllers
         }
 
         [HttpGet]
-        [Route("getCarrierOrdersDetails")]
-        public List<Models.Order> getCarrierOrdersDetails()
+        [Route("getCarrierOrdersDetails/{userId}")]
+        public List<OrderDTO> getCarrierOrdersDetails(string userId)
         {
-            List<Models.Order> orderList = new List<Models.Order>();
+            List<OrderDTO> orderList = new List<OrderDTO>();
             try
             {
-                orderList = _ordersRepository.getOrdersDetailsOfCarrier();
+                orderList = _ordersRepository.getOrdersDetailsOfCarrier(userId);
             }
             catch (Exception)
             {
                 orderList = null;
             }
             return orderList;
+        }
+
+        [HttpGet]
+        [Route("getQuoteOrders/{userId}")]
+        public List<PendingOrderDTO> getQuoteOrders(string userId)
+        {
+            List<PendingOrderDTO> orderList = new List<PendingOrderDTO>();
+            try
+            {
+                orderList = _ordersRepository.getQuoteOrders(userId);
+            }
+            catch (Exception)
+            {
+                orderList = null;
+            }
+            return orderList;
+        }
+
+        [HttpGet]
+        [Route("getQuotePrice/{equipmentType}/{pickUpDate}/{distance}")]
+        public double getQuotePrice(string equipmentType, DateOnly pickUpDate, double distance) {
+
+            double quotePrice;
+            try
+            {
+                quotePrice = _ordersRepository.getQuotePrice(equipmentType, pickUpDate, distance);
+
+            }
+            catch (Exception)
+            {
+                quotePrice = -1;
+            }
+            return quotePrice;
+
+        }
+
+        [HttpPost]
+        [Route("saveQuoteOrder")]
+        public async Task<IActionResult> saveQuoteOrder(OrderDTO quoteOrderDetails) {
+            
+            try
+            {
+               var orderReturn = await _ordersRepository.saveQuoteOrder(quoteOrderDetails);
+                if (orderReturn.QuoteOrderId > 0)
+                {
+                    return Ok(orderReturn.QuoteOrderId);
+                }
+                else
+                {
+                    return BadRequest(new { Error = orderReturn.message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("saveOrder")]
+        public async Task<IActionResult> saveOrder(OrderDTO orderDetails)
+        {
+            try
+            {
+              var orderReturn = await _ordersRepository.saveOrder(orderDetails);
+                if (orderReturn.orderId > 0)
+                {
+                return Ok(orderReturn.orderId);
+                }
+                else
+                {
+                    return BadRequest(new { Error = orderReturn.message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        [Route("changeOrderStatus")]
+        public bool changeOrderStatus(int orderId)
+        {
+            try
+            {
+                 return _ordersRepository.changeOrderStatus(orderId);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

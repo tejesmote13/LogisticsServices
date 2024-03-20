@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using LogisticsServices.Repositories.Order;
 using Microsoft.EntityFrameworkCore;
 
 namespace LogisticsServices.Models;
@@ -32,10 +31,20 @@ public partial class LogisticsDbContext : DbContext
 
     public virtual DbSet<Zip> Zips { get; set; }
     public virtual DbSet<OrderDTO> OrderDTO { get; set; }
+    public virtual DbSet<PendingOrderDTO> PendingOrderDTO { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source =(localdb)\\MSSQLLocalDB;Initial Catalog=LogisticsDB;Integrated Security=true");
+    {
+        var builder = new ConfigurationBuilder()
+                          .SetBasePath(Directory.GetCurrentDirectory())
+                          .AddJsonFile("appsettings.json");
+        var config = builder.Build();
+        var connectionString = config.GetConnectionString("LogisticsDBConnectionString");
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseSqlServer(connectionString);
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,7 +75,7 @@ public partial class LogisticsDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Password)
                 .IsRequired()
-                .HasMaxLength(10)
+                .HasMaxLength(150)
                 .IsUnicode(false);
             entity.Property(e => e.Phone)
                 .IsRequired()
@@ -99,7 +108,7 @@ public partial class LogisticsDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.EmailId)
                 .IsRequired()
-                .HasMaxLength(20)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.FirstName)
                 .IsRequired()
@@ -111,7 +120,7 @@ public partial class LogisticsDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Password)
                 .IsRequired()
-                .HasMaxLength(10)
+                .HasMaxLength(150)
                 .IsUnicode(false);
             entity.Property(e => e.Phone)
                 .IsRequired()
@@ -159,7 +168,7 @@ public partial class LogisticsDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Password)
                 .IsRequired()
-                .HasMaxLength(10)
+                .HasMaxLength(150)
                 .IsUnicode(false);
             entity.Property(e => e.Phone)
                 .IsRequired()
@@ -192,7 +201,7 @@ public partial class LogisticsDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.EmailId)
                 .IsRequired()
-                .HasMaxLength(20)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.FirstName)
                 .IsRequired()
@@ -204,7 +213,7 @@ public partial class LogisticsDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Password)
                 .IsRequired()
-                .HasMaxLength(10)
+                .HasMaxLength(150)
                 .IsUnicode(false);
             entity.Property(e => e.Phone)
                 .IsRequired()
@@ -247,8 +256,8 @@ public partial class LogisticsDbContext : DbContext
 
             entity.ToTable("Orders", "wrk");
 
-            entity.Property(e => e.OrderDate).HasColumnType("datetime");
-            entity.Property(e => e.PickUpDate).HasColumnType("datetime");
+            entity.Property(e => e.OrderDate).HasColumnType("date");
+            entity.Property(e => e.PickUpDate).HasColumnType("date");
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(20)
@@ -286,17 +295,11 @@ public partial class LogisticsDbContext : DbContext
 
             entity.ToTable("PendingOrders", "wrk");
 
-            entity.Property(e => e.IsOrderCreated).HasDefaultValueSql("((0))");
-            entity.Property(e => e.OrderDate).HasColumnType("datetime");
-            entity.Property(e => e.PickUpDate).HasColumnType("datetime");
-            entity.Property(e => e.Status)
-                .IsRequired()
-                .HasMaxLength(20)
-                .IsUnicode(false);
+            entity.Property(e => e.OrderDate).HasColumnType("date");
+            entity.Property(e => e.PickUpDate).HasColumnType("date");
 
             entity.HasOne(d => d.Carrier).WithMany(p => p.PendingOrders)
                 .HasForeignKey(d => d.CarrierId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CarrierId_PendingOrders");
 
             entity.HasOne(d => d.Customer).WithMany(p => p.PendingOrders)

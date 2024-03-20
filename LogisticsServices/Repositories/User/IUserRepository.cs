@@ -4,10 +4,12 @@ namespace LogisticsServices.Repositories.User
 {
     public interface IUserRepository
     {
-        public bool AddCustomerDetails(Customer customer);
-        public bool AddCarrierRegistrationDetails(Carrier carrier);
-        public bool AddCarrierRepRegistrationDetails(CarrierRep carrierRep);
-        public bool AddCustomerRepRegistrationDetails(CustomerRep customerRep);
-
-        }
+        public Task<(bool success, string message)> AddCustomerDetails(Customer customer);
+        public Task<(bool success, string message)> AddCarrierRegistrationDetails(Carrier carrier);
+        public Task<(bool success, string message)> AddCarrierRepRegistrationDetails(RegistrationDTO carrierRep);
+        public Task<(bool success, string message)> AddCustomerRepRegistrationDetails(RegistrationDTO customerRep);
+        public Task<(bool success, string message)> CheckLoginDetails(loginDTO loginDetails);
+        public string HashedPassword(string password);
+        public bool VerifyPassword(string password, string hashPassword);
+    }
 }
