@@ -1,4 +1,4 @@
-using LogisticsServices.Models;
+using LogisticsServices.DbContex;
 using LogisticsServices.Repositories.Order;
 using LogisticsServices.Repositories.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -7,8 +7,10 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
+// Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -52,7 +54,6 @@ app.UseCors(options =>
     options.AllowAnyMethod();
     options.AllowAnyHeader();
 });
-// Add JWT authentication
 
 app.UseHttpsRedirection();
 

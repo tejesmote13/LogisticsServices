@@ -1,7 +1,5 @@
 ﻿using LogisticsServices.Models;
 using LogisticsServices.Repositories.User;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LogisticsServices.Controllers
@@ -10,11 +8,12 @@ namespace LogisticsServices.Controllers
     [ApiController]
     public class RegistrationController : ControllerBase
     {
-
+        private readonly ILogger<RegistrationController> _logger; 
         private readonly UserRepository _userRepository;
-        public RegistrationController(UserRepository userRepository)
+        public RegistrationController(UserRepository userRepository, ILogger<RegistrationController> logger)
         {
             _userRepository = userRepository;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -23,11 +22,21 @@ namespace LogisticsServices.Controllers
         {
             try
             {
-               var status = await _userRepository.AddCustomerDetails(customer);
-                    return Ok(new { Status = status.success, Message = status.message });
+                var status = await _userRepository.AddCustomerDetails(customer);
+                if (status.success)
+                {
+                    _logger.LogInformation("Customer Registration Done succefully!");
+                }
+                else
+                {
+                    _logger.LogInformation("Customer Registration failed");
+                }
+
+                return Ok(new { Status = status.success, Message = status.message });
             }
             catch (Exception ex)
             {
+                _logger.LogInformation(" Error in Registration : " + ex.Message);
                 return BadRequest(new {Error = ex.Message });
             }
         }
@@ -39,10 +48,19 @@ namespace LogisticsServices.Controllers
             try
             {
                 var status = await _userRepository.AddCarrierRegistrationDetails(carrier);
+                if (status.success)
+                {
+                    _logger.LogInformation("Carrier Registration Done succefully!");
+                }
+                else
+                {
+                    _logger.LogInformation("Carrier Registration failed");
+                }
                 return Ok(new { Status = status.success, Message = status.message });
             }
             catch (Exception ex)
             {
+                _logger.LogInformation(" Error in Registration : " + ex.Message);
                 return BadRequest(new { Error = ex.Message });
             }
         }
@@ -54,10 +72,19 @@ namespace LogisticsServices.Controllers
             try
             {
                 var status = await _userRepository.AddCarrierRepRegistrationDetails(carrierRep);
+                if (status.success)
+                {
+                _logger.LogInformation("CarrierRep Registration Done succefully!");
+                }
+                else
+                {
+                _logger.LogInformation("CarrierRep Registration failed");
+                }
                 return Ok(new { Status = status.success, Message = status.message });
             }
             catch (Exception ex)
             {
+                _logger.LogInformation(" Error in Registration : " + ex.Message);
                 return BadRequest(new { Error = ex.Message });
             }
         }
@@ -69,10 +96,19 @@ namespace LogisticsServices.Controllers
             try
             {
               var  status = await _userRepository.AddCustomerRepRegistrationDetails(customerRep);
+                if (status.success)
+                {
+                    _logger.LogInformation("CustomerRep Registration Done succefully!");
+                }
+                else
+                {
+                    _logger.LogInformation("CustomerRep Registration failed");
+                }
                 return Ok(new { Status = status.success, Message = status.message });
             }
             catch (Exception ex)
             {
+                _logger.LogInformation(" Error in Registration : " + ex.Message);
                 return BadRequest(new { Error = ex.Message });
             }
         }
@@ -86,15 +122,18 @@ namespace LogisticsServices.Controllers
                var status = await _userRepository.CheckLoginDetails(loginDetails);
                 if (status.success)
                 {
+                    _logger.LogInformation("Login verified succefully!");
                     return Ok(new {token=status.message});
                 }
                 else
                 {
+                    _logger.LogInformation("Login verified Failed!");
                     return BadRequest(new { Error = status.message });
                 }  
             }
             catch (Exception ex)
             {
+                    _logger.LogInformation(" Error in login : "+ex.Message);
                 return BadRequest(new { Error = ex.Message });
             }
         }

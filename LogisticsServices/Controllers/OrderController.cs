@@ -11,10 +11,12 @@ namespace LogisticsServices.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
+        private readonly ILogger<OrderController> _logger;
         private readonly OrdersRepository _ordersRepository;
-        public OrderController(OrdersRepository ordersRepository)
+        public OrderController(OrdersRepository ordersRepository, ILogger<OrderController> logger)
         {
             _ordersRepository = ordersRepository;
+            _logger = logger;   
         }
 
         [HttpGet]
@@ -25,26 +27,30 @@ namespace LogisticsServices.Controllers
             try
             {
                 orderList = _ordersRepository.getOrdersDetailsOfCustomer(userId);
+                _logger.LogInformation("Customer order details fetched succefully!");
             }
             catch (Exception)
             {
                 orderList = null;
+                _logger.LogInformation("Not able fetch Order list");
             }
             return orderList;
         }
 
         [HttpGet]
-        [Route("getCarrierOrdersDetails/{userId}")]
-        public List<OrderDTO> getCarrierOrdersDetails(string userId)
+        [Route("getCarrierOrdersDetails")]
+        public List<OrderDTO> getCarrierOrdersDetails( )
         {
             List<OrderDTO> orderList = new List<OrderDTO>();
             try
             {
-                orderList = _ordersRepository.getOrdersDetailsOfCarrier(userId);
+                orderList = _ordersRepository.getOrdersDetailsOfCarrier();
+                _logger.LogInformation("Carrier order details fetched succefully!");
             }
             catch (Exception)
             {
                 orderList = null;
+                _logger.LogInformation("Not able fetch Order list");
             }
             return orderList;
         }
@@ -57,10 +63,13 @@ namespace LogisticsServices.Controllers
             try
             {
                 orderList = _ordersRepository.getQuoteOrders(userId);
+                _logger.LogInformation("Quote order details fetched succefully!");
+
             }
             catch (Exception)
             {
                 orderList = null;
+                _logger.LogInformation("Not able fetch Order list");
             }
             return orderList;
         }
@@ -73,11 +82,13 @@ namespace LogisticsServices.Controllers
             try
             {
                 quotePrice = _ordersRepository.getQuotePrice(equipmentType, pickUpDate, distance);
-
+                _logger.LogInformation("Quote price calculated successfully!");
             }
             catch (Exception)
             {
                 quotePrice = -1;
+                _logger.LogInformation("Quote price calculation failed.");
+
             }
             return quotePrice;
 
@@ -92,37 +103,43 @@ namespace LogisticsServices.Controllers
                var orderReturn = await _ordersRepository.saveQuoteOrder(quoteOrderDetails);
                 if (orderReturn.QuoteOrderId > 0)
                 {
+                    _logger.LogInformation("Quote order  saved successfully!");
                     return Ok(orderReturn.QuoteOrderId);
                 }
                 else
                 {
+                    _logger.LogInformation("Can't save Quote order.");
                     return BadRequest(new { Error = orderReturn.message });
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogInformation("Error : " + ex.Message);
                 return BadRequest(new { Error = ex.Message });
             }
         }
 
         [HttpPost]
         [Route("saveOrder")]
-        public async Task<IActionResult> saveOrder(OrderDTO orderDetails)
+        public async Task<IActionResult> saveOrder(OrderDTO orderDetails, int pendingOrderId)
         {
             try
             {
-              var orderReturn = await _ordersRepository.saveOrder(orderDetails);
+              var orderReturn = await _ordersRepository.saveOrder(orderDetails, pendingOrderId);
                 if (orderReturn.orderId > 0)
                 {
-                return Ok(orderReturn.orderId);
+                    _logger.LogInformation(" Order  saved successfully!");
+                    return Ok(orderReturn.orderId);
                 }
                 else
                 {
+                    _logger.LogInformation("Can't save Order.");
                     return BadRequest(new { Error = orderReturn.message });
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogInformation("Error : "+ex.Message);
                 return BadRequest(new { Error = ex.Message });
             }
         }
@@ -133,11 +150,71 @@ namespace LogisticsServices.Controllers
         {
             try
             {
-                 return _ordersRepository.changeOrderStatus(orderId);
+                return _ordersRepository.changeOrderStatus(orderId);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogInformation("Error : " + ex.Message);
                 return false;
+            }
+        }
+
+        [HttpGet]
+        [Route("getAddressList")]
+        public List<Zip> GetAddressList()
+        {
+            List<Zip> addressList = new List<Zip>();
+            try
+            {
+                addressList = _ordersRepository.GetAddressList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Error : " + ex.Message);
+                addressList = null;
+            }
+            return addressList;
+        }
+
+        [HttpGet]
+        [Route("getEquipmentList")]
+        public List<Equipment> GetEquipmentList()
+        {
+            List<Equipment> EquipmentList = new List<Equipment>();
+            try
+            {
+                EquipmentList = _ordersRepository.GetEquipmentList();
+            }
+            catch (Exception ex)
+            {
+                EquipmentList = null;
+                _logger.LogInformation("Error : " + ex.Message);
+            }
+            return EquipmentList;
+        }
+
+        [HttpGet]
+        [Route("updateQuoteOrder")]
+        public async Task<IActionResult> updateQuoteOrder(int pendingOrderId, double customerPrice)
+        {
+            try
+            {
+                var orderReturn = await _ordersRepository.updateQuoteOrder( pendingOrderId, customerPrice);
+                if (orderReturn.pendingOrderId > 0)
+                {
+                    _logger.LogInformation("Updated quote order successfully!");
+                    return Ok(orderReturn.pendingOrderId);
+                }
+                else
+                {
+                    _logger.LogInformation("Can't update quote order.");
+                    return BadRequest(new { Error = orderReturn.message });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Error : " + ex.Message);
+                return BadRequest(new { Error = ex.Message });
             }
         }
     }

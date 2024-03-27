@@ -12,6 +12,8 @@ namespace LogisticsServices.Models
         public int OriginZipId { get; set; }
         public int DestinationZipId { get; set; }
         public string EquipmentName { get; set; }
+        public string OriginAddress { get; set; }
+        public string DestinationAddress { get; set; }
         public double CarrierPrice { get; set; }
         public double CustomerPrice { get; set; }
         public string FirstName { get; set; }

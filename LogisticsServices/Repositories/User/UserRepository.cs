@@ -1,4 +1,5 @@
-﻿using LogisticsServices.Models;
+﻿using LogisticsServices.DbContex;
+using LogisticsServices.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileSystemGlobbing.Internal;
@@ -13,10 +14,10 @@ namespace LogisticsServices.Repositories.User
 {
     public class UserRepository:IUserRepository
     {
-        private readonly LogisticsDbContext _context;
+        private readonly DbContex.LogisticsDbContext _context;
         private const string pattern = @"(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$";
 
-        public UserRepository(LogisticsDbContext contex)
+        public UserRepository(DbContex.LogisticsDbContext contex)
         {
             this._context = contex;
         }

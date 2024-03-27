@@ -13,6 +13,8 @@ public partial class Equipment
 
     public bool IsHazmat { get; set; }
 
+    public double EquipmentPrice { get; set; }
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual ICollection<PendingOrder> PendingOrders { get; set; } = new List<PendingOrder>();

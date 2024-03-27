@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using LogisticsServices.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace LogisticsServices.DbContex;
+namespace LogisticsServices.Models;
 
 public partial class LogisticsDbContext : DbContext
 {
@@ -46,7 +45,6 @@ public partial class LogisticsDbContext : DbContext
             optionsBuilder.UseSqlServer(connectionString);
         }
     }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Carrier>(entity =>

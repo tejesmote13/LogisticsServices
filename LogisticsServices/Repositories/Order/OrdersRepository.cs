@@ -1,4 +1,5 @@
-﻿using LogisticsServices.Models;
+﻿using LogisticsServices.DbContex;
+using LogisticsServices.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -7,9 +8,9 @@ namespace LogisticsServices.Repositories.Order
 {
     public class OrdersRepository : IOrdersRepository
     {
-        private readonly LogisticsDbContext _context;
+        private readonly DbContex.LogisticsDbContext _context;
         public double customerPrice { get; set; }
-        public OrdersRepository(LogisticsDbContext contex)
+        public OrdersRepository(DbContex.LogisticsDbContext contex)
         {
             this._context = contex;
         }
@@ -54,7 +55,7 @@ namespace LogisticsServices.Repositories.Order
                     "EXEC [dbo].[usp_InsertQuoteOrder] @PendingOrderId OUTPUT, @CustomerId, @CarrierId, @QuoteOrderDate, @PickUpDate, @OriginZipId, @DestinationZipId, @EquipmentId, @CarrierPrice, @CustomerPrice",
                     prmQuoteOrderId, prmCustomerId, prmCarrierId, prmQuoteOrderDate, prmPickUpDate, prmOriginZipId, prmDestinationZipId, prmEquipmentId, prmCarrierPrice, prmCustomerPrice
                 );
-
+             
                 int QuoteOrderId = (int)prmQuoteOrderId.Value;
                 return (QuoteOrderId, "Order has created successfuly.");
             }
@@ -63,7 +64,7 @@ namespace LogisticsServices.Repositories.Order
                 return (-1, $"Error saving order: {ex.Message}");
             }
         }
-        public async Task<(int orderId, string message)> saveOrder(OrderDTO orderDetails)
+        public async Task<(int orderId, string message)> saveOrder(OrderDTO orderDetails,int pendingOrderId)
         {
             try
             {
@@ -78,7 +79,7 @@ namespace LogisticsServices.Repositories.Order
                             .Select(c => c.CustomerId)
                             .FirstOrDefault();
 
-                int carrierId = 4;
+                int carrierId = 1;
                 orderDetails.CarrierPrice = 1.5 * orderDetails.CustomerPrice;
 
                 if (equipmentId == 0)
@@ -96,6 +97,7 @@ namespace LogisticsServices.Repositories.Order
                 SqlParameter prmCarrierPrice = new SqlParameter("@CarrierPrice", orderDetails.CarrierPrice);
                 SqlParameter prmCustomerPrice = new SqlParameter("@CustomerPrice", orderDetails.CustomerPrice);
 
+                
                 SqlParameter prmOrderId = new SqlParameter("@OrderId", SqlDbType.Int)
                 {
                     Direction = ParameterDirection.Output
@@ -105,6 +107,17 @@ namespace LogisticsServices.Repositories.Order
                     prmOrderId, prmCustomerId, prmCarrierId, prmOrderDate, prmPickUpDate, prmStatus, prmOriginZipId, prmDestinationZipId, prmEquipmentId, prmCarrierPrice, prmCustomerPrice);
 
                 int orderId = (int)prmOrderId.Value;
+
+                if (orderId > 0)
+                {
+                    var pendingOrderData = _context.PendingOrders.Where(p=>p.PendingOrderId==pendingOrderId).FirstOrDefault();
+                    if(pendingOrderData != null)
+                    {
+                         _context.PendingOrders.Remove(pendingOrderData);
+                        _context.SaveChanges();
+                    }
+                }
+
                 return (orderId,"Order has created successfuly.");
             }
             catch (Exception ex)
@@ -112,14 +125,15 @@ namespace LogisticsServices.Repositories.Order
                 return (-1, $"Error saving order: {ex.Message}");
             }
             }
-        public double getQuotePrice(string equimentType, DateOnly pickUpDate, double distance)
+        public double getQuotePrice(string equipmentType, DateOnly pickUpDate, double distance)
         {
             try
             {
                 // perhour= mile/hour * rateperequipmenttype
 
                 double ratePerMile = 10;
-                double equimentCostPerHour = (distance/60)*2;
+                double equipmentCost = _context.Equipments.Where(e => e.EquipmentName == equipmentType).Select(s => s.EquipmentPrice).FirstOrDefault();
+                double equimentCostPerHour = (distance/60)* equipmentCost;
 
                 customerPrice = (distance * ratePerMile) + equimentCostPerHour;
 
@@ -168,15 +182,13 @@ namespace LogisticsServices.Repositories.Order
             }
             return ordersList;
         }
-        public List<OrderDTO> getOrdersDetailsOfCarrier(string userId)
+        public List<OrderDTO> getOrdersDetailsOfCarrier()
         {
             List<OrderDTO> ordersList = new List<OrderDTO>();
 
             try
             {
-                int carrierId = _context.Carriers.Where(x => x.UserId == userId).Select(c => c.CarrierId).FirstOrDefault();
-                SqlParameter prmCarrierId = new SqlParameter("@carrierId", carrierId);
-                ordersList = _context.OrderDTO.FromSqlRaw("select * from dbo.fetchCarrierDashboardDetails(@carrierId)", prmCarrierId).ToList();
+                ordersList = _context.OrderDTO.FromSqlRaw("select * from dbo.fetchCarrierDashboardDetails()").ToList();
             }
             catch (Exception)
             {
@@ -217,6 +229,59 @@ namespace LogisticsServices.Repositories.Order
                 return true;
             }
             else {  return false; }
+        }
+
+        public List<Zip> GetAddressList()
+        {
+            List<Zip> addressList = new List<Zip>();
+
+            try
+            {
+                addressList = _context.Zips.ToList();
+            }
+            catch (Exception)
+            {
+                addressList = null;
+            }
+            return addressList;
+        }
+
+        public List<Equipment> GetEquipmentList()
+        {
+            List<Equipment> EquipmentList = new List<Equipment>();
+
+            try
+            {
+                EquipmentList = _context.Equipments.ToList();
+            }
+            catch (Exception)
+            {
+                EquipmentList = null;
+            }
+            return EquipmentList;
+        }
+
+        public async Task<(int pendingOrderId, string message)> updateQuoteOrder(int pendingOrderId, double customerPrice)
+        {
+
+            try
+            {
+                var quoteorder = _context.PendingOrders.Find(pendingOrderId);
+                double carrierPrice = 1.5 * customerPrice;
+                if(quoteorder == null)
+                {
+                    return (-1, "Order Not Found");
+                }
+                quoteorder.CustomerPrice=customerPrice;
+                quoteorder.CarrierPrice = carrierPrice;
+
+               await _context.SaveChangesAsync();
+               return (quoteorder.PendingOrderId, "Order has updated successfully.");
+            }
+            catch (Exception)
+            {
+                return (-1, "There is an Error. Please try again.");
+            }
         }
     }
 }
